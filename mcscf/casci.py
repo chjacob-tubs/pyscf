@@ -182,9 +182,6 @@ def cas_natorb(mc, mo_coeff=None, ci=None, eris=None, sort=False,
         idx = numpy.argsort(occ)
         occ = occ[idx]
         ucas = ucas[:,idx]
-        if hasattr(mc, 'orbsym'): # for casci_symm
-            mc.orbsym[ncore:nocc] = mc.orbsym[ncore:nocc][idx]
-            mc.fcisolver.orbsym = mc.orbsym[ncore:nocc]
 
     occ = -occ
 
@@ -287,8 +284,6 @@ def canonicalize(mc, mo_coeff=None, ci=None, eris=None, sort=False,
             idx = numpy.argsort(w)
             w = w[idx]
             c1 = c1[:,idx]
-            if hasattr(mc, 'orbsym'): # for mc1step_symm
-                mc.orbsym[:ncore] = mc.orbsym[:ncore][idx]
         mo_coeff1[:,:ncore] = numpy.dot(mo_coeff[:,:ncore], c1)
         if log.verbose >= logger.DEBUG:
             for i in range(ncore):
@@ -299,8 +294,6 @@ def canonicalize(mc, mo_coeff=None, ci=None, eris=None, sort=False,
             idx = numpy.argsort(w)
             w = w[idx]
             c1 = c1[:,idx]
-            if hasattr(mc, 'orbsym'): # for mc1step_symm
-                mc.orbsym[nocc:] = mc.orbsym[nocc:][idx]
         mo_coeff1[:,nocc:] = numpy.dot(mo_coeff[:,nocc:], c1)
         if log.verbose >= logger.DEBUG:
             for i in range(nmo-nocc):
@@ -541,7 +534,9 @@ class CASCI(object):
                       cas_natorb=False, verbose=None):
         self.mo_coeff, self.ci = canonicalize(self, mo_coeff, ci, eris,
                                               sort, cas_natorb, verbose)
-        return self.mo_coeff, self.ci
+        if cas_natorb:  # When active space is changed, the ci solution needs to be updated
+            self.ci = ci
+        return self.mo_coeff, ci
 
     def analyze(self, mo_coeff=None, ci=None, verbose=logger.INFO):
         return analyze(self, mo_coeff, ci, verbose)
