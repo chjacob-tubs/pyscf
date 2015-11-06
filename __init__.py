@@ -104,7 +104,7 @@ function may change the status of the argument ``adiis``
 
 '''
 
-__version__ = '1.0'
+__version__ = '1.0.1'
 
 import os
 from pyscf import gto

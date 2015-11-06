@@ -1,3 +1,9 @@
+Version 1.0.1 (2015-11-6):
+* Fix bug in mcscf canaonicalization
+* Fix unicode issue for python3
+* Fix C/F contiguous bug in C code interface
+* Fix symmetry assignment bug for state-averaged CASSCF
+
 Version 1.0 (2015-10-8):
 * 1.0 Release
 

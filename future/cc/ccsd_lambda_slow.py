@@ -13,8 +13,6 @@ from pyscf.lib import logger
 import pyscf.ao2mo
 from pyscf.cc import ccsd
 
-libcc = lib.load_library('libcc')
-
 # t2,l2 as ijab
 
 # default max_memory = 2000 MB

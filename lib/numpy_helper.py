@@ -173,6 +173,8 @@ def takebak_2d_(out, a, idx, idy):
      [ 0.  0.  0.]
      [ 1.  0.  1.]]
     '''
+    assert(out.flags.c_contiguous)
+    a = numpy.asarray(a, order='C')
     if numpy.iscomplexobj(a):
         out[idx[:,None],idy] += a
     else:
