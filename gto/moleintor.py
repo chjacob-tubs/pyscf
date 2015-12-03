@@ -163,6 +163,14 @@ def getints(intor_name, atm, bas, env, bras=None, kets=None, comp=1, hermi=0):
     naoi = sum([num_cgto_of(ctypes.c_int(i), c_bas) for i in bras])
     naoj = sum([num_cgto_of(ctypes.c_int(i), c_bas) for i in kets])
 
+    if intor_name == 'cint2e_sph':
+        from pyscf.scf import _vhf
+        from pyscf import ao2mo
+        eri = ao2mo.restore(1, _vhf.int2e_sph(atm, bas, env), naoi)
+        return eri
+    elif '2e' in intor_name:
+        raise NotImplementedError('This feature is available in PySCF v1.1')
+
     bralst = numpy.array(bras, dtype=numpy.int32)
     ketlst = numpy.array(kets, dtype=numpy.int32)
     mat = numpy.empty((comp,naoi,naoj), dtype)
