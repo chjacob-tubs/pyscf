@@ -363,8 +363,7 @@ def mulliken_pop(mol, dm, s=None, verbose=logger.DEBUG):
         chg[s[0]] += pop_a[i] + pop_b[i]
     for ia in range(mol.natm):
         symb = mol.atom_symbol(ia)
-        nuc = mol.atom_charge(ia)
-        chg[ia] = nuc - chg[ia]
+        chg[ia] = mol.atom_charge(ia) - chg[ia]
         log.info('charge of  %d%s =   %10.5f', ia, symb, chg[ia])
     return (pop_a,pop_b), chg
 
@@ -449,9 +448,9 @@ class UHF(hf.SCF):
         if diis_start_cycle is None:
             diis_start_cycle = self.diis_start_cycle
         if level_shift_factor is None:
-            level_shift_factor = self.level_shift_factor
+            level_shift_factor = self.level_shift
         if damp_factor is None:
-            damp_factor = self.damp_factor
+            damp_factor = self.damp
         return get_fock_(self, h1e, s1e, vhf, dm, cycle, adiis,
                          diis_start_cycle, level_shift_factor, damp_factor)
 
@@ -480,18 +479,21 @@ class UHF(hf.SCF):
             numpy.set_printoptions(threshold=len(mo_energy[0]))
             logger.debug(self, '  mo_energy = %s', mo_energy[0])
 
-        if n_b > 0:
+        if n_b > 0 and n_b < mo_energy[1].size:
             logger.info(self, 'beta  nocc = %d  HOMO = %.12g  LUMO = %.12g',
                         n_b, mo_energy[1][n_b-1], mo_energy[1][n_b])
             if mo_energy[1][n_b-1]+1e-3 > mo_energy[1][n_b]:
                 logger.warn(self, '!! beta HOMO %.12g >= LUMO %.12g',
                             mo_energy[1][n_b-1], mo_energy[1][n_b])
+            if mo_energy[0][n_a-1]+1e-3 > mo_energy[1][n_b]:
+                logger.warn(self, '!! system HOMO %.12g >= system LUMO %.12g',
+                            mo_energy[0][n_a-1], mo_energy[1][n_b])
+        elif n_b > 0:
+            logger.info(self, 'beta nocc = %d  HOMO = %.12g  no LUMO',
+                        n_b, mo_energy[1][n_b-1])
         else:
             logger.info(self, 'beta  nocc = %d  no HOMO  LUMO = %.12g',
                         n_b, mo_energy[1][n_b])
-        if mo_energy[0][n_a-1]+1e-3 > mo_energy[1][n_b]:
-            logger.warn(self, '!! system HOMO %.12g >= system LUMO %.12g',
-                        mo_energy[0][n_a-1], mo_energy[1][n_b])
         if self.verbose >= logger.DEBUG:
             logger.debug(self, '  mo_energy = %s', mo_energy[1])
             numpy.set_printoptions()
@@ -572,26 +574,6 @@ class UHF(hf.SCF):
             vj, vk = self.get_jk(mol, ddm, hermi)
             vhf = _makevhf(vj, vk, nset) + numpy.array(vhf_last, copy=False)
         return vhf
-
-    def scf(self, dm0=None):
-        cput0 = (time.clock(), time.time())
-
-        self.build()
-        self.dump_flags()
-        self.converged, self.hf_energy, \
-                self.mo_energy, self.mo_coeff, self.mo_occ \
-                = hf.kernel(self, self.conv_tol, self.conv_tol_grad,
-                            dm0=dm0, callback=self.callback)
-#        if self.nelec[0] * 2 < self.mol.nelectron:
-#            self.mo_coeff = (self.mo_coeff[1], self.mo_coeff[0])
-#            self.mo_occ = (self.mo_occ[1], self.mo_occ[0])
-#            self.mo_energy = (self.mo_energy[1], self.mo_energy[0])
-
-        logger.timer(self, 'SCF', *cput0)
-        self.dump_energy(self.hf_energy, self.converged)
-        #if self.verbose >= logger.INFO:
-        #    self.analyze(self.verbose)
-        return self.hf_energy
 
     def analyze(self, verbose=logger.DEBUG):
         return analyze(self, verbose)
