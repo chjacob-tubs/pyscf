@@ -3,6 +3,7 @@ project (pyscf)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O2 -funroll-loops")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNDEBUG -ffast-math -fno-strict-overflow -fomit-frame-pointer")
+set(CMAKE_SHARED_LINKER_FLAGS "-Wl,--no-as-needed")
 set(CMAKE_VERBOSE_MAKEFILE OFF)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -78,8 +79,8 @@ add_subdirectory(cc)
 add_subdirectory(ri)
 add_subdirectory(localizer)
 
-if (${ENABLE_LIBXC})
-endif()
+if (${DISABLE_DFT})
+else()
 if (EXISTS "${PROJECT_SOURCE_DIR}/deps/include/xc.h")
 else()
   ExternalProject_Add(libxc
@@ -92,3 +93,4 @@ else()
   )
 endif()
 add_subdirectory(dft)
+endif()
